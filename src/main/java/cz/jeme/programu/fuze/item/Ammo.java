@@ -23,10 +23,10 @@ public class Ammo extends FuzeItem {
     }
 
     /**
-     * Returns a {@link Ammo} registered with the provided key.
+     * Returns an {@link Ammo} registered with the provided ammo key.
      *
-     * @param key the key of the ammo
-     * @return the {@link Ammo} registered with the key
+     * @param key the ammo key
+     * @return an {@link Ammo} registered with the ammo key
      * @throws IllegalArgumentException when the key is not a valid ammo key
      */
     public static @NotNull Ammo valueOf(final @NotNull String key) {

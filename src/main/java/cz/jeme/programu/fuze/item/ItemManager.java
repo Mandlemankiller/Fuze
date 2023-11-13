@@ -28,7 +28,7 @@ public enum ItemManager {
     private static final class ItemRegistryMap<I extends FuzeItem> extends HashMap<Class<? extends I>, ItemRegistry<? extends I>> {
     }
 
-    private final @NotNull ItemRegistryMap<FuzeItem> registryMap = new ItemRegistryMap<>();
+    private final @NotNull ItemRegistryMap<FuzeItem> registries = new ItemRegistryMap<>();
     private final @NotNull Map<String, Class<? extends FuzeItem>> itemTypes = new HashMap<>();
 
     /**
@@ -36,7 +36,7 @@ public enum ItemManager {
      * <p>After calling this method, you should always register all items again.</p>
      */
     public void reset() {
-        registryMap.clear();
+        registries.clear();
         itemTypes.clear();
     }
 
@@ -54,10 +54,12 @@ public enum ItemManager {
                 "\"" + sectionName + "\" not found in registry!"
         );
         registry.registerItem(section);
-        itemTypes.put(registry.getItemType()
-                        .orElseThrow(() -> new IllegalStateException("Item type is undefined after successfull registration of fuze item \"" + itemClass.getName() + "\"!")),
-                itemClass);
-        registryMap.put(itemClass, registry);
+        String type = registry.getItemType()
+                .orElseThrow(() -> new IllegalStateException("Item type is undefined after successfull registration of \"" + itemClass.getName() + "\"!"));
+        if (itemTypes.containsKey(type))
+            throw new IllegalArgumentException("Item type must be unique (\"" + type + "\")!");
+        itemTypes.put(type, itemClass);
+        registries.put(itemClass, registry);
     }
 
     /**
@@ -92,7 +94,7 @@ public enum ItemManager {
      * @return an optional {@link ItemRegistry} registered with the item class
      */
     public <I extends FuzeItem> @NotNull Optional<ItemRegistry<I>> getRegistryByClass(final @NotNull Class<I> itemClass) {
-        ItemRegistry<? extends FuzeItem> registry = registryMap.get(itemClass);
+        ItemRegistry<? extends FuzeItem> registry = registries.get(itemClass);
         if (registry == null) return Optional.empty();
         @SuppressWarnings("unchecked") ItemRegistry<I> iRegistry = (ItemRegistry<I>) registry;
         return Optional.of(iRegistry);
@@ -212,7 +214,7 @@ public enum ItemManager {
                 constructor = itemClass.getDeclaredConstructor(ConfigurationSection.class);
             } catch (NoSuchMethodException e) {
                 throw new IllegalStateException(
-                        "Fuze item class \"" + itemClass.getName() + "\" does not have any constructor with ConfigurationSection!",
+                        "Item class \"" + itemClass.getName() + "\" does not have any constructor with ConfigurationSection!",
                         e);
             }
             constructor.setAccessible(true);

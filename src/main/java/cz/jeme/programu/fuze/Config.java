@@ -1,8 +1,8 @@
 package cz.jeme.programu.fuze;
 
 import cz.jeme.programu.fuze.item.Ammo;
-import cz.jeme.programu.fuze.item.ItemManager;
 import cz.jeme.programu.fuze.item.Gun;
+import cz.jeme.programu.fuze.item.ItemManager;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +52,7 @@ public final class Config {
     }
 
     /**
-     * Reloads the entire plugin. Also called initially when the plugin is enabled
+     * Reloads the entire plugin. Also called initially when the plugin is enabled.
      */
     public void reload() {
         plugin.reloadConfig(); // Reload config from disk
@@ -73,7 +73,7 @@ public final class Config {
 
     /**
      * Returns the registry {@link ConfigurationSection}.
-     * All registration data is stored in this section.
+     * <p>All registration data is stored in this section.</p>
      *
      * @return the registry {@link ConfigurationSection}
      */
@@ -85,7 +85,7 @@ public final class Config {
     }
 
     /**
-     * Saves the configuration to disk.
+     * Saves the plugin configuration to disk.
      */
     public void save() {
         plugin.saveConfig();

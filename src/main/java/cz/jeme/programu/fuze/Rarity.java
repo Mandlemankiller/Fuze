@@ -59,10 +59,10 @@ public final class Rarity implements Keyable {
 
 
     /**
-     * Returns a {@link Rarity} registered with the provided key.
+     * Returns a {@link Rarity} registered with the provided rarity key.
      *
-     * @param key the key of the rarity
-     * @return the {@link Rarity} registered with the key
+     * @param key the rarity key
+     * @return a {@link Rarity} registered with the rarity key
      * @throws IllegalArgumentException when the key is not a valid rarity key
      */
     public static @NotNull Rarity valueOf(final @NotNull String key) {

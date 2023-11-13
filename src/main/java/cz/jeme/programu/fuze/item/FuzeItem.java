@@ -132,11 +132,11 @@ public abstract class FuzeItem implements Keyable {
     /**
      * Returns an item registered with the provided key.
      *
-     * @param key       the key of the item
-     * @param itemClass the {@link Class} of the item
+     * @param key       the item key
+     * @param itemClass the item class
      * @param <I>       the item
      * @return an item registered with the key
-     * @throws IllegalArgumentException when the key is not a valid key of the item
+     * @throws IllegalArgumentException when the key is not a valid item key
      */
     public static <I extends FuzeItem> @NotNull I valueOf(final @NotNull String key, final @NotNull Class<I> itemClass) {
         return ItemManager.INSTANCE.getItemByKey(key, itemClass).orElseThrow(

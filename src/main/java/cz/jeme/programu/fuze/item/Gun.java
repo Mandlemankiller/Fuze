@@ -33,10 +33,10 @@ public class Gun extends FuzeItem {
     }
 
     /**
-     * Returns a {@link Gun} registered with the provided key.
+     * Returns a {@link Gun} registered with the provided gun key.
      *
-     * @param key the key of the gun
-     * @return the {@link Gun} registered with the key
+     * @param key the gun key
+     * @return a {@link Gun} registered with the gun key
      * @throws IllegalArgumentException when the key is not a valid gun key
      */
     public static @NotNull Gun valueOf(final @NotNull String key) {
