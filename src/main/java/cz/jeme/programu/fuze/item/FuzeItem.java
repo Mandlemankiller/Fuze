@@ -1,7 +1,6 @@
 package cz.jeme.programu.fuze.item;
 
 import cz.jeme.programu.fuze.Message;
-import cz.jeme.programu.fuze.Rarity;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
