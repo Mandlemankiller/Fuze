@@ -1,6 +1,5 @@
 package cz.jeme.programu.fuze;
 
-import cz.jeme.programu.fuze.item.Keyable;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.jetbrains.annotations.NotNull;

@@ -1,5 +1,6 @@
 package cz.jeme.programu.fuze.item;
 
+import cz.jeme.programu.fuze.Keyable;
 import cz.jeme.programu.fuze.Message;
 import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;

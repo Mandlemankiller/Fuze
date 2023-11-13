@@ -1,6 +1,9 @@
 package cz.jeme.programu.fuze.item;
 
+import cz.jeme.programu.fuze.Keyable;
 import cz.jeme.programu.fuze.Message;
+import cz.jeme.programu.fuze.item.impl.Ammo;
+import cz.jeme.programu.fuze.item.impl.Gun;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;

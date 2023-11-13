@@ -1,6 +1,8 @@
-package cz.jeme.programu.fuze.item;
+package cz.jeme.programu.fuze.item.impl;
 
 import cz.jeme.programu.fuze.Message;
+import cz.jeme.programu.fuze.item.FuzeItem;
+import cz.jeme.programu.fuze.item.ItemManager;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
