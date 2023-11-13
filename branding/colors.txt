@@ -1,0 +1,4 @@
+primary: #004778
+secondary: #0C335A
+light: #0066B3
+background: #111111

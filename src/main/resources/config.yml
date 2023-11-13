@@ -1,0 +1,14 @@
+registry:
+  rarities:
+    epic:
+      name: '<dark_purple>EPIC'
+      chance: 3
+
+  guns:
+    ak-47:
+      name: 'AK-47'
+      rarity: 'epic'
+
+  ammo:
+    9mm:
+      name: '9mm'

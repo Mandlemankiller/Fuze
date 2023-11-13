@@ -1,0 +1,4 @@
+name: Fuze
+version: '${project.version}'
+main: cz.jeme.programu.fuze.Fuze
+api-version: '1.20'
