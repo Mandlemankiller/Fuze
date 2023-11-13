@@ -4,14 +4,14 @@ import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Represents an object that has a type and a unique key.
+ * Represents an object that has a type, name and a unique key.
  * This will usually be objects prepared to be read from the config.
  */
 public interface Keyable {
     /**
      * Returns the type of this object, this should represent some kind of group this item is in.
-     * <p></p><p>Correct values are e.g. "gun", "ammo", "rarity"</p>
-     * <p></p><p>Incorrect values are e.g. "item" (too generic), "smoke_grenade" (too specific, should be probably just "grenade")</p>
+     * <br><p>Correct values are e.g. "gun", "ammo", "rarity"</p>
+     * <br><p>Incorrect values are e.g. "item" (too generic), "smoke_grenade" (too specific, should be probably just "grenade")</p>
      *
      * @return the type
      */

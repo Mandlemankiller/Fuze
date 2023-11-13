@@ -11,8 +11,19 @@ import java.util.Objects;
  * Represents a gun in the Fuze plugin.
  */
 public class Gun extends FuzeItem {
+    /**
+     * The ammo of this gun.
+     * <p>Read from the {@link ConfigurationSection} and then parsed using {@link Ammo#valueOf(String)}.</p>
+     */
     protected final @NotNull Ammo ammo;
 
+    /**
+     * Initializes a {@link Gun}.
+     * <p><b>This constructor and constructors of this classes inheritors should never be called manually!</b></p>
+     * <p>Items are initialized automatically using reflection in {@link ItemManager} during item registration!</p>
+     *
+     * @param section the gun {@link ConfigurationSection} in config
+     */
     protected Gun(final @NotNull ConfigurationSection section) {
         super(section);
 

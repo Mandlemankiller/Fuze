@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public final class Message {
     private Message() {
-        throw new AssertionError();
+        throw new AssertionError(); // Utility
     }
 
     /**
@@ -50,13 +50,15 @@ public final class Message {
 
     /**
      * Generates a not-found message for a configuration path with a type and name information inside.
-     * <p>The message looks like this:</p>
+     * <br><p>The message looks like this:</p>
      * {@literal  "{PATH}" not found in {TYPE} "{KEY}"!}
-     * <p>For example:</p>
+     * <br><p>For example:</p>
      * {@literal "rarity" not found in gun "ak-47"!}
      *
      * @param path the missing path
-     * @return the deserialized {@link Component}
+     * @param type the keyable type
+     * @param key  the keyable key
+     * @return the not-found message for the missing path
      */
     public static @NotNull String missing(final @NotNull String path, final @NotNull String type, final @NotNull String key) {
         return "\"" + path + "\" not found in " + type + " \"" + key + "\"!";
@@ -65,13 +67,14 @@ public final class Message {
     /**
      * Generates a not-found message for a configuration path
      * with the information provided by the {@link Keyable} interface ({@link Keyable#getType()}, {@link Keyable#getKey()}).
-     * <p>The message looks like this:</p>
+     * <br><p>The message looks like this:</p>
      * {@literal  "{PATH}" not found in {TYPE} "{KEY}"!}
-     * <p>For example:</p>
+     * <br><p>For example:</p>
      * {@literal "rarity" not found in gun "ak-47"!}
      *
-     * @param path the missing path
-     * @return the deserialized {@link Component}
+     * @param path    the missing path
+     * @param keyable the keyable to load type and key information from
+     * @return the not-found message for the missing path
      */
     public static @NotNull String missing(final @NotNull String path, final @NotNull Keyable keyable) {
         return missing(path, keyable.getType(), keyable.getKey());
@@ -89,12 +92,12 @@ public final class Message {
 
     /**
      * Removes all tags from a component.
-     * The component will be serialized and deserialized in the process.
+     * <p>The component will be serialized in the process.</p>
      *
      * @param component the component to remove tags from
-     * @return the stripped component
+     * @return the stripped, serialized component
      */
-    public static @NotNull Component strip(final @NotNull Component component) {
-        return deserialize(strip(serialize(component)));
+    public static @NotNull String strip(final @NotNull Component component) {
+        return strip(serialize(component));
     }
 }

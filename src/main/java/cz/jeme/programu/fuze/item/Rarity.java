@@ -11,17 +11,49 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Represents a {@link FuzeItem}'s rarity.
+ * Represents an item rarity.
  */
 public final class Rarity implements Keyable {
-    private static final @NotNull Map<String, Rarity> RARITIES = new HashMap<>();
+    private static final @NotNull Map<String, Rarity> KEYED_RARITIES = new HashMap<>();
+
+    /**
+     * Registers all the rarities in the provided {@link ConfigurationSection}.
+     * <p>This method should not be called outside the Fuze API.</p>
+     *
+     * @param section the {@link ConfigurationSection} to register all rarities in
+     * @throws IllegalArgumentException when it encounters an invalid rarity {@link ConfigurationSection}
+     */
+    public static void registerRarities(final @NotNull ConfigurationSection section) {
+        KEYED_RARITIES.clear();
+        for (String rarityName : section.getKeys(false)) {
+            ConfigurationSection raritySection = section.getConfigurationSection(rarityName);
+            if (raritySection == null)
+                throw new IllegalArgumentException("Invalid rarity in \"" + rarityName + "\"!");
+
+            KEYED_RARITIES.put(rarityName, new Rarity(raritySection));
+        }
+    }
+
+    /**
+     * Returns a {@link Rarity} registered with the provided rarity key.
+     *
+     * @param key the rarity key
+     * @return a {@link Rarity} registered with the rarity key
+     * @throws IllegalArgumentException when the key is not a valid rarity key
+     */
+    public static @NotNull Rarity valueOf(final @NotNull String key) {
+        return Optional.ofNullable(KEYED_RARITIES.get(key)).orElseThrow(
+                () -> new IllegalArgumentException("Unknown rarity key: \"" + key + "\"!")
+        );
+    }
+
     private final @NotNull String key;
     private final @NotNull Component name;
     private final int chance;
 
     private Rarity(final @NotNull ConfigurationSection section) {
         key = section.getName();
-        if (RARITIES.containsKey(key))
+        if (KEYED_RARITIES.containsKey(key))
             throw new IllegalArgumentException("\"name\" is not unique in rarity \"" + key + "\"!");
 
         name = Message.deserialize(Objects.requireNonNull(
@@ -35,39 +67,7 @@ public final class Rarity implements Keyable {
         if (chance <= 0)
             throw new IllegalArgumentException("\"chance\" is not bigger than zero in rarity \"" + key + "\"!");
 
-        RARITIES.put(key, this);
-    }
-
-    /**
-     * Registers all the rarities in the provided {@link ConfigurationSection}.
-     * <p>This method should not be called outside the Fuze API.</p>
-     *
-     * @param section the {@link ConfigurationSection} to register all rarities in
-     * @throws IllegalArgumentException when it encounters an invalid rarity {@link ConfigurationSection}
-     */
-    public static void registerRarities(final @NotNull ConfigurationSection section) {
-        RARITIES.clear();
-        for (String rarityName : section.getKeys(false)) {
-            ConfigurationSection raritySection = section.getConfigurationSection(rarityName);
-            if (raritySection == null)
-                throw new IllegalArgumentException("Invalid rarity in \"" + rarityName + "\"!");
-
-            RARITIES.put(rarityName, new Rarity(raritySection));
-        }
-    }
-
-
-    /**
-     * Returns a {@link Rarity} registered with the provided rarity key.
-     *
-     * @param key the rarity key
-     * @return a {@link Rarity} registered with the rarity key
-     * @throws IllegalArgumentException when the key is not a valid rarity key
-     */
-    public static @NotNull Rarity valueOf(final @NotNull String key) {
-        return Optional.ofNullable(RARITIES.get(key)).orElseThrow(
-                () -> new IllegalArgumentException("Unknown rarity key: \"" + key + "\"!")
-        );
+        KEYED_RARITIES.put(key, this);
     }
 
     @Override

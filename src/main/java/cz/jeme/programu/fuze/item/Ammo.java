@@ -5,9 +5,16 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * Represents ammo in the Fuze plugin.
+ * Represents an ammo in the Fuze plugin.
  */
 public class Ammo extends FuzeItem {
+    /**
+     * Initializes an {@link Ammo}.
+     * <p><b>This constructor and constructors of this classes inheritors should never be called manually!</b></p>
+     * <p>Items are initialized automatically using reflection in {@link ItemManager} during item registration!</p>
+     *
+     * @param section the ammo {@link ConfigurationSection} in config
+     */
     protected Ammo(final @NotNull ConfigurationSection section) {
         super(section);
     }

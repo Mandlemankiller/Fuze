@@ -21,6 +21,7 @@ public final class Config {
      * Initializes Config. If Config was already initialized, it will fail silently.
      * <p>This method should not be called outside the Fuze API.</p>
      *
+     * @param plugin the {@link Fuze} plugin instance
      * @return true when Config was successfully initialized, otherwise false
      */
     public static synchronized boolean init(final @NotNull Fuze plugin) {
