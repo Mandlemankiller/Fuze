@@ -12,20 +12,20 @@ import java.util.*;
 /**
  * Manages all item registration in the Fuze plugin.
  */
-public enum FuzeItemManager {
+public enum ItemManager {
     /**
-     * The one and only {@link FuzeItemManager}.
+     * The one and only {@link ItemManager}.
      */
     INSTANCE;
 
     /**
      * A map used to store {@link ItemRegistry}.
-     * <p>Enforces that the generic type of a key {@link Class} is the same as
-     * the generic type of a value {@link ItemRegistry}</p>
+     * <p>Enforces that the generic type of a key class is the same as
+     * the generic type of a value {@link ItemRegistry}.</p>
      *
-     * @param <F> {@link FuzeItem}
+     * @param <I> {@link FuzeItem}
      */
-    private static final class ItemRegistryMap<F extends FuzeItem> extends HashMap<Class<? extends F>, ItemRegistry<? extends F>> {
+    private static final class ItemRegistryMap<I extends FuzeItem> extends HashMap<Class<? extends I>, ItemRegistry<? extends I>> {
     }
 
     private final @NotNull ItemRegistryMap<FuzeItem> registryMap = new ItemRegistryMap<>();
@@ -33,7 +33,7 @@ public enum FuzeItemManager {
 
     /**
      * Clears all item registrations.
-     * <p>After calling this method, you should always register the {@link FuzeItem}s again.</p>
+     * <p>After calling this method, you should always register all items again.</p>
      */
     public void reset() {
         registryMap.clear();
@@ -43,7 +43,7 @@ public enum FuzeItemManager {
     /**
      * Registers an item.
      *
-     * @param itemClass   the {@link Class} of the item
+     * @param itemClass   the item class
      * @param sectionName the name of the {@link ConfigurationSection}, that contains the configuration for all instances of this item
      * @param <I>         the item
      */
@@ -64,32 +64,32 @@ public enum FuzeItemManager {
      * Returns an item registered with the provided key.
      * <p><b>You should probably use {@link FuzeItem#valueOf(String, Class)} or the item's own valueOf method instead!</b></p>
      *
-     * @param key       the key of the item
-     * @param itemClass the {@link Class} of the item
+     * @param key       the item key
+     * @param itemClass the item class
      * @param <I>       the item
      * @return an optional item registered with the key
      */
     public <I extends FuzeItem> @NotNull Optional<I> getItemByKey(final @NotNull String key, final @NotNull Class<I> itemClass) {
-        Optional<ItemRegistry<I>> o = getRegistryByClass(itemClass);
-        return o.flatMap(registry -> registry.getItemByKey(key));
+        Optional<ItemRegistry<I>> optionalRegistry = getRegistryByClass(itemClass);
+        return optionalRegistry.flatMap(registry -> registry.getItemByKey(key));
     }
 
     /**
-     * Translates an item type to an item {@link Class}.
+     * Translates an item type to an item class.
      *
-     * @param type the type of the item
-     * @return the {@link Class} of the item
+     * @param type the item type
+     * @return the item class
      */
     public @NotNull Optional<Class<? extends FuzeItem>> typeToItemClass(final @NotNull String type) {
         return Optional.ofNullable(itemTypes.get(type));
     }
 
     /**
-     * Returns a {@link ItemRegistry} registered with the provided item {@link Class}
+     * Returns an {@link ItemRegistry} registered with the provided item class.
      *
-     * @param itemClass the {@link Class} of the item
+     * @param itemClass the item class
      * @param <I>       the item
-     * @return an optional {@link ItemRegistry} registered with the item {@link Class}
+     * @return an optional {@link ItemRegistry} registered with the item class
      */
     public <I extends FuzeItem> @NotNull Optional<ItemRegistry<I>> getRegistryByClass(final @NotNull Class<I> itemClass) {
         ItemRegistry<? extends FuzeItem> registry = registryMap.get(itemClass);
@@ -99,27 +99,29 @@ public enum FuzeItemManager {
     }
 
     /**
-     * Returns a {@link ItemRegistry} registered with the provided item type.
+     * Returns an {@link ItemRegistry} registered with the provided item type.
      *
      * @param type the item type
      * @return an optional {@link ItemRegistry} registered with the item type
      */
     public @NotNull Optional<ItemRegistry<? extends FuzeItem>> getRegistryByType(final @NotNull String type) {
-        Optional<? extends ItemRegistry<? extends FuzeItem>> o = getRegistryByClass(itemTypes.get(type));
-        if (o.isEmpty()) return Optional.empty();
-        return Optional.of(o.get());
+        Optional<Class<? extends FuzeItem>> optionalItemClass = typeToItemClass(type);
+        if (optionalItemClass.isEmpty()) return Optional.empty();
+        Optional<? extends ItemRegistry<? extends FuzeItem>> optionalRegistry = getRegistryByClass(optionalItemClass.get());
+        @SuppressWarnings("unchecked") Optional<ItemRegistry<? extends FuzeItem>> typedOptionalRegistry = (Optional<ItemRegistry<? extends FuzeItem>>) optionalRegistry;
+        return typedOptionalRegistry;
     }
 
     /**
-     * Returns all items registered with the provided item {@link Class}.
+     * Returns all items registered with the provided item class.
      *
-     * @param itemClass the {@link Class} of the item
+     * @param itemClass the item class
      * @param <I>       the item
-     * @return a list of items registered with the item {@link Class}
+     * @return a list of items registered with the item class
      */
     public <I extends FuzeItem> @NotNull List<I> getItemsByClass(final @NotNull Class<I> itemClass) {
-        Optional<ItemRegistry<I>> o = getRegistryByClass(itemClass);
-        return o.map(ItemRegistry::getItems).orElseGet(List::of);
+        Optional<ItemRegistry<I>> optionalRegistry = getRegistryByClass(itemClass);
+        return optionalRegistry.map(ItemRegistry::getItems).orElseGet(List::of);
     }
 
     /**
@@ -129,19 +131,19 @@ public enum FuzeItemManager {
      * @return a list of items registered with the item type
      */
     public @NotNull List<? extends FuzeItem> getItemsByType(final @NotNull String type) {
-        Optional<ItemRegistry<? extends FuzeItem>> o = getRegistryByType(type);
-        return o.map(ItemRegistry::getItems).orElseGet(List::of);
+        Optional<ItemRegistry<? extends FuzeItem>> optionalRegistry = getRegistryByType(type);
+        return optionalRegistry.map(ItemRegistry::getItems).orElseGet(List::of);
     }
 
     /**
-     * Returns all item keys registered with the provided item {@link Class}.
+     * Returns all item keys registered with the provided item class.
      *
-     * @param itemClass the {@link Class} of the item
-     * @return a set of item keys registered with the item {@link Class}
+     * @param itemClass the item class
+     * @return a set of item keys registered with the item class
      */
     public @NotNull Set<String> getKeysByClass(final @NotNull Class<? extends FuzeItem> itemClass) {
-        Optional<? extends ItemRegistry<? extends FuzeItem>> o = getRegistryByClass(itemClass);
-        return o.map(ItemRegistry::getKeys).orElseGet(Set::of);
+        Optional<? extends ItemRegistry<? extends FuzeItem>> optionalRegistry = getRegistryByClass(itemClass);
+        return optionalRegistry.map(ItemRegistry::getKeys).orElseGet(Set::of);
     }
 
     /**
@@ -151,8 +153,8 @@ public enum FuzeItemManager {
      * @return a set of item keys registered with the item type
      */
     public @NotNull Set<String> getKeysByType(final @NotNull String type) {
-        Optional<ItemRegistry<? extends FuzeItem>> o = getRegistryByType(type);
-        return o.map(ItemRegistry::getKeys).orElseGet(Set::of);
+        Optional<ItemRegistry<? extends FuzeItem>> optionalRegistry = getRegistryByType(type);
+        return optionalRegistry.map(ItemRegistry::getKeys).orElseGet(Set::of);
     }
 
     /**
@@ -179,7 +181,7 @@ public enum FuzeItemManager {
         /**
          * Creates the {@link ItemRegistry}.
          *
-         * @param itemClass   the class of the item
+         * @param itemClass   the item class
          * @param sectionName the name of the {@link ConfigurationSection} that contains the configuration for all instances of this item
          */
         public ItemRegistry(final @NotNull Class<I> itemClass, final @NotNull String sectionName) {
@@ -188,9 +190,9 @@ public enum FuzeItemManager {
         }
 
         /**
-         * Registers all items in the {@link ConfigurationSection} from the data provided by its sub-sections.
+         * Registers all item instances using the data read from the sub-sections of the provided {@link ConfigurationSection}.
          *
-         * @param section the {@link ConfigurationSection}, that contains the configuration for all instances of this item
+         * @param section the {@link ConfigurationSection} that contains the configuration for all instances of this item
          */
         public void registerItem(final @NotNull ConfigurationSection section) {
             for (String key : section.getKeys(false)) {
@@ -200,9 +202,9 @@ public enum FuzeItemManager {
         }
 
         /**
-         * Registers a single item from the data provided by the {@link ConfigurationSection}.
+         * Registers a single item instance using the data read from {@link ConfigurationSection}.
          *
-         * @param itemSection the {@link ConfigurationSection} to register the item from
+         * @param itemSection the {@link ConfigurationSection} to register the item instance from
          */
         public void registerItemInstance(final @NotNull ConfigurationSection itemSection) {
             Constructor<I> constructor;
@@ -232,7 +234,7 @@ public enum FuzeItemManager {
         /**
          * Returns an item registered with the provided key.
          *
-         * @param key the key of this item
+         * @param key the item key
          * @return an optional item
          */
         public @NotNull Optional<I> getItemByKey(final @NotNull String key) {
@@ -240,19 +242,19 @@ public enum FuzeItemManager {
         }
 
         /**
-         * Returns the item {@link Class} of this {@link ItemRegistry}.
+         * Returns the class of this {@link ItemRegistry}'s item.
          *
-         * @return the item {@link Class} of this {@link ItemRegistry}
+         * @return the item class
          */
         public @NotNull Class<I> getItemClass() {
             return itemClass;
         }
 
         /**
-         * Returns the item type of this {@link ItemRegistry}.
-         * <p>At least one item instance must be registered for this method to return a full {@link Optional}.</p>
+         * Returns the type of this {@link ItemRegistry}'s item.
+         * <p>At least one item instance must be registered for this method to return a non-empty {@link Optional}.</p>
          *
-         * @return an optional item type of this {@link ItemRegistry}
+         * @return an optional item type
          */
         public @NotNull Optional<String> getItemType() {
             return Optional.ofNullable(itemType);
@@ -277,9 +279,9 @@ public enum FuzeItemManager {
         }
 
         /**
-         * Returns the name of the {@link ConfigurationSection} that contains the configuration for all instances of this item
+         * Returns the name of the {@link ConfigurationSection} that contains the configuration for all instances of this {@link ItemRegistry}'s item.
          *
-         * @return the name of the {@link ConfigurationSection} that contains the configuration for all instances of this item
+         * @return the name of the {@link ConfigurationSection}
          */
         public @NotNull String getSectionName() {
             return sectionName;

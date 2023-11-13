@@ -1,7 +1,7 @@
 package cz.jeme.programu.fuze;
 
 import cz.jeme.programu.fuze.item.FuzeItem;
-import cz.jeme.programu.fuze.item.FuzeItemManager;
+import cz.jeme.programu.fuze.item.ItemManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -96,12 +96,12 @@ public final class FuzeCommand extends Command {
                     yield players;
                 }
 
-                case 3 -> new ArrayList<>(FuzeItemManager.INSTANCE.getItemTypes()); // fz give player <type>
+                case 3 -> new ArrayList<>(ItemManager.INSTANCE.getItemTypes()); // fz give player <type>
 
                 case 4 -> { // fz give player type <item>
                     String type = args[2];
-                    if (!FuzeItemManager.INSTANCE.getItemTypes().contains(type)) yield List.of();
-                    Optional<FuzeItemManager.ItemRegistry<? extends FuzeItem>> o = FuzeItemManager.INSTANCE.getRegistryByType(type);
+                    if (!ItemManager.INSTANCE.getItemTypes().contains(type)) yield List.of();
+                    Optional<ItemManager.ItemRegistry<? extends FuzeItem>> o = ItemManager.INSTANCE.getRegistryByType(type);
                     if (o.isEmpty()) yield List.of();
                     yield new ArrayList<>(o.get().getKeys());
                 }
@@ -181,7 +181,7 @@ public final class FuzeCommand extends Command {
 
         String type = execution.args()[2];
 
-        Optional<Class<? extends FuzeItem>> optionalItemClass = FuzeItemManager.INSTANCE.typeToItemClass(type);
+        Optional<Class<? extends FuzeItem>> optionalItemClass = ItemManager.INSTANCE.typeToItemClass(type);
         if (optionalItemClass.isEmpty()) {
             sender.sendMessage(Message.prefix("<red>Unknown item type: " + type));
             return;
@@ -190,7 +190,7 @@ public final class FuzeCommand extends Command {
 
 
         String key = execution.args()[3];
-        Optional<? extends FuzeItem> optionalItem = FuzeItemManager.INSTANCE.getItemByKey(key, itemClass);
+        Optional<? extends FuzeItem> optionalItem = ItemManager.INSTANCE.getItemByKey(key, itemClass);
         if (optionalItem.isEmpty()) {
             sender.sendMessage(Message.prefix("<red>Unknown item name: " + key));
             return;

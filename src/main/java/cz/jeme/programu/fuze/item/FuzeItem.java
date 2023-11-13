@@ -12,10 +12,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 /**
- * Represents a custom item type in the Fuze plugin.
- * <p>This class is meant to be inherited by different types of items.</p>
+ * Represents a custom item in the Fuze plugin.
+ * <p>This class is meant to be inherited by different concrete items.</p>
  * e.g. {@link Gun}, {@link Ammo}...
- * <p>Dont forget to register the item on start type using {@link FuzeItemManager#registerItem(Class, String)}.</p>
+ * <p>Dont forget to register the item on start type using {@link ItemManager#registerItem(Class, String)}.</p>
  */
 public abstract class FuzeItem implements Keyable {
     /**
@@ -38,15 +38,14 @@ public abstract class FuzeItem implements Keyable {
 
     /**
      * The {@link ItemStack} of this item.
-     * <p>This basically represents the contents of this Fuze item.</p>
+     * <p>This basically represents the core of this item.</p>
      */
     protected final @NotNull ItemStack item;
 
     /**
-     * Initializes a Fuze item.
+     * Initializes an item.
      * <p><b>This constructor and constructors of this classes inheritors should never be called manually!</b></p>
-     * <p>Fuze items are initialized automatically using reflection in {@link FuzeItemManager}
-     * after calling {@link FuzeItemManager#registerItem(Class, String)}!</p>
+     * <p>Items are initialized automatically using reflection in {@link ItemManager} during item registration!</p>
      *
      * @param section the {@link ConfigurationSection} of the item in config
      */
@@ -76,15 +75,14 @@ public abstract class FuzeItem implements Keyable {
     }
 
     /**
-     * Returns the item {@link Material} of this Fuze item.
-     * <p>This method should be overriden by all inheritor types of {@link FuzeItem}.</p>
+     * Returns the item {@link Material} of this {@link FuzeItem#item}.
      *
-     * @return the {@link Material} of this Fuze item
+     * @return the {@link Material} of this item
      */
     public abstract @NotNull Material getMaterial();
 
     /**
-     * Returns the {@link FuzeItem#key} of this Fuze item.
+     * Returns the {@link FuzeItem#key} of this item.
      *
      * @return the key
      */
@@ -94,7 +92,7 @@ public abstract class FuzeItem implements Keyable {
     }
 
     /**
-     * Returns the display {@link FuzeItem#name} of this Fuze item.
+     * Returns the display {@link FuzeItem#name} of this item.
      *
      * @return the display name
      */
@@ -103,7 +101,7 @@ public abstract class FuzeItem implements Keyable {
     }
 
     /**
-     * Returns the {@link FuzeItem#rarity} of this Fuze item.
+     * Returns the {@link FuzeItem#rarity} of this item.
      *
      * @return the rarity
      */
@@ -112,7 +110,7 @@ public abstract class FuzeItem implements Keyable {
     }
 
     /**
-     * Returns the {@link FuzeItem#item} of this Fuze item.
+     * Returns the {@link FuzeItem#item} of this item.
      *
      * @return the item
      */
@@ -121,10 +119,10 @@ public abstract class FuzeItem implements Keyable {
     }
 
     /**
-     * Turns this Fuze item into a nice readable string.
+     * Turns this item into a nice readable string.
      * The {@link FuzeItem#name} will be used for this purpose.
      *
-     * @return the name of this Fuze item
+     * @return the stripped {@link FuzeItem#name} of this item
      */
     @Override
     public @NotNull String toString() {
@@ -137,11 +135,11 @@ public abstract class FuzeItem implements Keyable {
      * @param key       the key of the item
      * @param itemClass the {@link Class} of the item
      * @param <I>       the item
-     * @return the item registered with the key
+     * @return an item registered with the key
      * @throws IllegalArgumentException when the key is not a valid key of the item
      */
     public static <I extends FuzeItem> @NotNull I valueOf(final @NotNull String key, final @NotNull Class<I> itemClass) {
-        return FuzeItemManager.INSTANCE.getItemByKey(key, itemClass).orElseThrow(
+        return ItemManager.INSTANCE.getItemByKey(key, itemClass).orElseThrow(
                 () -> new IllegalArgumentException("Unknown fuze item key: \"" + key + "\"!")
         );
     }

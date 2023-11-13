@@ -1,7 +1,7 @@
 package cz.jeme.programu.fuze;
 
 import cz.jeme.programu.fuze.item.Ammo;
-import cz.jeme.programu.fuze.item.FuzeItemManager;
+import cz.jeme.programu.fuze.item.ItemManager;
 import cz.jeme.programu.fuze.item.Gun;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -65,10 +65,10 @@ public final class Config {
         ));
 
         // Register all item types
-        FuzeItemManager.INSTANCE.reset();
+        ItemManager.INSTANCE.reset();
         // Ammo must be registered first! Guns require the ammo to be registered, see Gun#getAmmo()
-        FuzeItemManager.INSTANCE.registerItem(Ammo.class, "ammo");
-        FuzeItemManager.INSTANCE.registerItem(Gun.class, "guns");
+        ItemManager.INSTANCE.registerItem(Ammo.class, "ammo");
+        ItemManager.INSTANCE.registerItem(Gun.class, "guns");
     }
 
     /**
