@@ -1,4 +1,4 @@
-package cz.jeme.programu.fuze;
+package cz.jeme.programu.fuze.item;
 
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;

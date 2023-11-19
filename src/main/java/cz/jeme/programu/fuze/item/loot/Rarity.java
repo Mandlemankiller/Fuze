@@ -1,7 +1,7 @@
-package cz.jeme.programu.fuze.item;
+package cz.jeme.programu.fuze.item.loot;
 
-import cz.jeme.programu.fuze.Keyable;
-import cz.jeme.programu.fuze.Message;
+import cz.jeme.programu.fuze.item.Keyable;
+import cz.jeme.programu.fuze.util.Messages;
 import net.kyori.adventure.text.Component;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +15,7 @@ import java.util.Optional;
  * Represents an item rarity.
  */
 public final class Rarity implements Keyable {
-    private static final @NotNull Map<String, Rarity> KEYED_RARITIES = new HashMap<>();
+    private static final @NotNull Map<String, Rarity> rarities = new HashMap<>();
 
     /**
      * Registers all the rarities in the provided {@link ConfigurationSection}.
@@ -25,27 +25,36 @@ public final class Rarity implements Keyable {
      * @throws IllegalArgumentException when it encounters an invalid rarity {@link ConfigurationSection}
      */
     public static void registerRarities(final @NotNull ConfigurationSection section) {
-        KEYED_RARITIES.clear();
+        rarities.clear();
         for (String rarityName : section.getKeys(false)) {
             ConfigurationSection raritySection = section.getConfigurationSection(rarityName);
             if (raritySection == null)
                 throw new IllegalArgumentException("Invalid rarity in \"" + rarityName + "\"!");
 
-            KEYED_RARITIES.put(rarityName, new Rarity(raritySection));
+            rarities.put(rarityName, new Rarity(raritySection));
         }
     }
 
     /**
-     * Returns a {@link Rarity} registered with the provided rarity key.
+     * Returns a rarity registered with the provided rarity key.
      *
      * @param key the rarity key
-     * @return a {@link Rarity} registered with the rarity key
-     * @throws IllegalArgumentException when the key is not a valid rarity key
+     * @return a rarity registered with the rarity key
+     * @throws IllegalArgumentException when no rarity with the provided key exists
      */
     public static @NotNull Rarity valueOf(final @NotNull String key) {
-        return Optional.ofNullable(KEYED_RARITIES.get(key)).orElseThrow(
-                () -> new IllegalArgumentException("Unknown rarity key: \"" + key + "\"!")
-        );
+        return Optional.ofNullable(rarities.get(key))
+                .orElseThrow(() -> new IllegalArgumentException("Unknown rarity key: \"" + key + "\"!"));
+    }
+
+    /**
+     * Returns whether a rarity registered with the provided rarity key exists.
+     *
+     * @param key the rarity key
+     * @return true when the rarity exists otherwise false
+     */
+    public static boolean exists(final @NotNull String key) {
+        return rarities.containsKey(key);
     }
 
     private final @NotNull String key;
@@ -54,21 +63,21 @@ public final class Rarity implements Keyable {
 
     private Rarity(final @NotNull ConfigurationSection section) {
         key = section.getName();
-        if (KEYED_RARITIES.containsKey(key))
+        if (rarities.containsKey(key))
             throw new IllegalArgumentException("\"name\" is not unique in rarity \"" + key + "\"!");
 
-        name = Message.deserialize(Objects.requireNonNull(
+        name = Messages.deserialize(Objects.requireNonNull(
                 section.getString("name"),
-                Message.missing("name", this)
+                Messages.missing("name", this)
         ));
 
         if (!section.contains("chance"))
-            throw new NullPointerException(Message.missing("chance", this));
+            throw new NullPointerException(Messages.missing("chance", this));
         chance = section.getInt("chance");
         if (chance <= 0)
             throw new IllegalArgumentException("\"chance\" is not bigger than zero in rarity \"" + key + "\"!");
 
-        KEYED_RARITIES.put(key, this);
+        rarities.put(key, this);
     }
 
     @Override
@@ -104,6 +113,6 @@ public final class Rarity implements Keyable {
      */
     @Override
     public String toString() {
-        return Message.strip(Message.serialize(name));
+        return Messages.strip(Messages.serialize(name));
     }
 }

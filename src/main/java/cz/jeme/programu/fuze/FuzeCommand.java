@@ -1,7 +1,9 @@
 package cz.jeme.programu.fuze;
 
 import cz.jeme.programu.fuze.item.FuzeItem;
-import cz.jeme.programu.fuze.item.ItemManager;
+import cz.jeme.programu.fuze.item.registry.ItemManager;
+import cz.jeme.programu.fuze.item.registry.ItemRegistry;
+import cz.jeme.programu.fuze.util.Messages;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -101,7 +103,7 @@ public final class FuzeCommand extends Command {
                 case 4 -> { // fz give player type <item>
                     String type = args[2];
                     if (!ItemManager.INSTANCE.getItemTypes().contains(type)) yield List.of();
-                    Optional<ItemManager.ItemRegistry<? extends FuzeItem>> o = ItemManager.INSTANCE.getRegistryByType(type);
+                    Optional<ItemRegistry<? extends FuzeItem>> o = ItemManager.INSTANCE.getRegistryByType(type);
                     if (o.isEmpty()) yield List.of();
                     yield new ArrayList<>(o.get().getKeys());
                 }
@@ -135,7 +137,7 @@ public final class FuzeCommand extends Command {
             case GIVE -> give(execution);
             case HELP -> usage(execution.sender());
             case UNKNOWN -> execution.sender()
-                    .sendMessage(Message.prefix("<red>Unknown action: " + execution.args[0]));
+                    .sendMessage(Messages.prefix("<red>Unknown action: " + execution.args[0]));
         }
     }
 
@@ -144,23 +146,23 @@ public final class FuzeCommand extends Command {
         try {
             Config.instance().reload();
         } catch (Exception e) {
-            sender.sendMessage(Message.prefix("<red>An error occurred while reloading the plugin! Please check the console!"));
+            sender.sendMessage(Messages.prefix("<red>An error occurred while reloading the plugin! Please check the console!"));
             throw e;
         }
-        sender.sendMessage(Message.prefix("<green>Plugin reloaded successfully!"));
+        sender.sendMessage(Messages.prefix("<green>Plugin reloaded successfully!"));
     }
 
     private static void give(final @NotNull Execution execution) {
         final CommandSender sender = execution.sender();
 
         if (execution.args().length < 4) {
-            sender.sendMessage(Message.prefix("<red>Not enough arguments!"));
+            sender.sendMessage(Messages.prefix("<red>Not enough arguments!"));
             usage(sender);
             return;
         }
 
         if (execution.args().length > 5) {
-            sender.sendMessage(Message.prefix("<red>Too many arguments!"));
+            sender.sendMessage(Messages.prefix("<red>Too many arguments!"));
             usage(sender);
             return;
         }
@@ -173,7 +175,7 @@ public final class FuzeCommand extends Command {
         } else {
             Player player = Bukkit.getPlayerExact(playerName);
             if (player == null) {
-                sender.sendMessage(Message.prefix("<red>Player \"" + playerName + "\" is not online!"));
+                sender.sendMessage(Messages.prefix("<red>Player \"" + playerName + "\" is not online!"));
                 return;
             }
             players.add(player);
@@ -183,7 +185,7 @@ public final class FuzeCommand extends Command {
 
         Optional<Class<? extends FuzeItem>> optionalItemClass = ItemManager.INSTANCE.typeToItemClass(type);
         if (optionalItemClass.isEmpty()) {
-            sender.sendMessage(Message.prefix("<red>Unknown item type: " + type));
+            sender.sendMessage(Messages.prefix("<red>Unknown item type: " + type));
             return;
         }
         Class<? extends FuzeItem> itemClass = optionalItemClass.get();
@@ -192,7 +194,7 @@ public final class FuzeCommand extends Command {
         String key = execution.args()[3];
         Optional<? extends FuzeItem> optionalItem = ItemManager.INSTANCE.getItemByKey(key, itemClass);
         if (optionalItem.isEmpty()) {
-            sender.sendMessage(Message.prefix("<red>Unknown item name: " + key));
+            sender.sendMessage(Messages.prefix("<red>Unknown item name: " + key));
             return;
         }
         ItemStack item = optionalItem.get().getItem();
@@ -208,7 +210,7 @@ public final class FuzeCommand extends Command {
                 valid = false;
             }
             if (!valid) {
-                sender.sendMessage(Message.prefix("<red>Invalid item amount: " + amountStr));
+                sender.sendMessage(Messages.prefix("<red>Invalid item amount: " + amountStr));
                 return;
             }
         }
@@ -225,7 +227,7 @@ public final class FuzeCommand extends Command {
 
     private static void usage(final @NotNull CommandSender sender) {
         // TODO!
-        sender.sendMessage(Message.deserialize("<red>This is a usage!"));
+        sender.sendMessage(Messages.deserialize("<red>This is a usage!"));
     }
 
     private record Execution(@NotNull CommandSender sender,

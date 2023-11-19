@@ -8,7 +8,10 @@ registry:
     ak-47:
       name: 'AK-47'
       rarity: 'epic'
+      shoot-cooldown: 200
+      damage: 3
 
   ammo:
     9mm:
       name: '9mm'
+      rarity: 'epic'

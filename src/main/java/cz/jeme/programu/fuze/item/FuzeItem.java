@@ -1,10 +1,15 @@
 package cz.jeme.programu.fuze.item;
 
-import cz.jeme.programu.fuze.Keyable;
-import cz.jeme.programu.fuze.Message;
+import cz.jeme.programu.fuze.item.event.EventManager;
 import cz.jeme.programu.fuze.item.impl.Ammo;
 import cz.jeme.programu.fuze.item.impl.Gun;
+import cz.jeme.programu.fuze.item.loot.Rarity;
+import cz.jeme.programu.fuze.item.registry.ItemManager;
+import cz.jeme.programu.fuze.item.storage.FuzeItemData;
+import cz.jeme.programu.fuze.item.storage.ItemData;
+import cz.jeme.programu.fuze.util.Messages;
 import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
@@ -21,6 +26,39 @@ import java.util.Objects;
  */
 public abstract class FuzeItem implements Keyable {
     /**
+     * Returns an item registered with the provided key.
+     *
+     * @param key       the item key
+     * @param itemClass the item class
+     * @param <T>       the item
+     * @return an item registered with the item key
+     * @throws IllegalArgumentException when no item of the itemClass with the provided key exists
+     */
+    public static <T extends FuzeItem> @NotNull T valueOf(final @NotNull String key, final @NotNull Class<T> itemClass) {
+        return ItemManager.INSTANCE.getItemByKey(key, itemClass)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown item key: \"" + key + "\"!"));
+    }
+
+    /**
+     * Returns whether an item registered with the provided key exists.
+     *
+     * @param key       the item key
+     * @param itemClass the item class
+     * @return true when the item exists otherwise false
+     */
+    public static boolean exists(final @NotNull String key, final @NotNull Class<? extends FuzeItem> itemClass) {
+        return ItemManager.INSTANCE.existsItemByKey(key, itemClass);
+    }
+
+    public static final @NotNull ItemData<String, String> KEY = new FuzeItemData<>("item_key", ItemData.STRING);
+
+    /**
+     * The {@link ConfigurationSection} of the item instance in config.
+     * <p>Obtained as a parameter in the constructor.</p>
+     */
+    protected final @NotNull ConfigurationSection section;
+
+    /**
      * The unique key of this item.
      * <p>Read from the {@link ConfigurationSection}'s name.</p>
      */
@@ -28,12 +66,12 @@ public abstract class FuzeItem implements Keyable {
 
     /**
      * The display name of this item.
-     * <p>Read from the {@link ConfigurationSection} and then deserialized ({@link Message#deserialize(String)}).</p>
+     * <p>Read from the {@link ConfigurationSection} and then deserialized ({@link Messages#deserialize(String)}).</p>
      */
     protected final @NotNull Component name;
 
     /**
-     * The {@link Rarity} of this item.
+     * The rarity of this item.
      * <p>Read from the {@link ConfigurationSection} and then parsed using {@link Rarity#valueOf(String)}.</p>
      */
     protected final @NotNull Rarity rarity;
@@ -45,46 +83,130 @@ public abstract class FuzeItem implements Keyable {
     protected final @NotNull ItemStack item;
 
     /**
+     * The material of this item.
+     * <p>Read from the {@link FuzeItem#getMaterial(ConfigurationSection)} method.</p>
+     */
+    protected final @NotNull Material material;
+
+    /**
      * Initializes an item.
      * <p><b>This constructor and constructors of this classes inheritors should never be called manually!</b></p>
      * <p>Items are initialized automatically using reflection in {@link ItemManager} during item registration!</p>
      *
-     * @param section the {@link ConfigurationSection} of the item in config
+     * @param section the {@link ConfigurationSection} of the item instance in config
+     * @throws IllegalArgumentException when the section name (item key) doesn't match [a-z0-9_.-]
+     *                                  or when when no rarity with the rarity key exists
+     * @throws NullPointerException     when name or rarity is not set in config
+     * @throws IllegalStateException    when the material wasn't defined (neither {@link FuzeItem#getMaterial(ConfigurationSection)} nor {@link FuzeItem#getMaterial()} has been overridden)
      */
     protected FuzeItem(final @NotNull ConfigurationSection section) {
+        this.section = section;
+
         final String tempKey = section.getName();
         if (!tempKey.matches("^[a-z0-9_.-]+$"))
             throw new IllegalArgumentException(
-                    "Invalid " + getType() + " key \"" + tempKey + "\"! " +
-                            "Keys can only contain [a-z0-9_.-]!"
+                    "Invalid item key: %s! Keys can only contain [a-z0-9_.-]!"
+                            .formatted(tempKey)
             );
         key = tempKey;
 
-        name = Message.deserialize(Objects.requireNonNull(
-                section.getString("name"),
-                Message.missing("name", this)
-        ));
+        name = Messages.deserialize(requireConfigString("name"));
 
-        rarity = Rarity.valueOf(Objects.requireNonNull(
-                section.getString("rarity"),
-                Message.missing("rarity", this)
-        ));
+        rarity = Rarity.valueOf(requireConfigString("rarity"));
 
-        item = new ItemStack(getMaterial());
+        material = getMaterial(section);
+
+        item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
-        meta.displayName(Message.deserialize("<!i>").append(name));
+        if (meta == null) meta = Bukkit.getItemFactory().getItemMeta(material);
+        KEY.set(meta, key);
+        meta.displayName(Messages.deserialize("<!i>").append(name));
         item.setItemMeta(meta);
+
+        // Register all events
+        EventManager.INSTANCE.registerEventsTree(getClass(), false);
     }
 
     /**
-     * Returns the item {@link Material} of this {@link FuzeItem#item}.
+     * Returns a String value of the path in the config section.
      *
-     * @return the {@link Material} of this item
+     * @param path the path of the String to get
+     * @return requested String
+     * @throws NullPointerException when the path doesn't exist or the value is not a String
      */
-    public abstract @NotNull Material getMaterial();
+    protected final @NotNull String requireConfigString(final @NotNull String path) {
+        return Objects.requireNonNull(
+                section.getString(path),
+                Messages.missing(path, this)
+        );
+    }
 
     /**
-     * Returns the {@link FuzeItem#key} of this item.
+     * Returns an int value of the path in the config section.
+     *
+     * @param path the path of the int to get
+     * @return requested int
+     * @throws NullPointerException when the path doesn't exist or the value is not an int
+     */
+    protected final int requireConfigInt(final @NotNull String path) {
+        if (!section.isInt(path))
+            throw new NullPointerException(Messages.missing(path, this));
+        return section.getInt(path);
+    }
+
+    /**
+     * Returns a long value of the path in the config section.
+     *
+     * @param path the path of the long to get
+     * @return requested long
+     * @throws NullPointerException when the path doesn't exist or the value is not a long
+     */
+    protected final long requireConfigLong(final @NotNull String path) {
+        if (!section.isLong(path) && !section.isInt(path))
+            throw new NullPointerException(Messages.missing(path, this));
+        return section.getLong(path);
+    }
+
+    /**
+     * Returns a double value of the path in the config section.
+     *
+     * @param path the path of the double to get
+     * @return requested double
+     * @throws NullPointerException when the path doesn't exist or the value is not a double
+     */
+    protected final double requireConfigDouble(final @NotNull String path) {
+        if (!section.isDouble(path) && !section.isInt(path) && !section.isLong(path))
+            throw new NullPointerException(Messages.missing(path, this));
+        return section.getDouble(path);
+    }
+
+    /**
+     * Returns the material of this item.
+     * <p>This method should be overridden by items with a single, statically set material.</p>
+     * For items with multiple, dynamically loaded materials (read from a {@link ConfigurationSection}) see {@link FuzeItem#getMaterial(ConfigurationSection)}.
+     *
+     * @return the material of this item
+     * @throws IllegalStateException when neither this method nor {@link FuzeItem#getMaterial(ConfigurationSection)} has been overridden
+     */
+    public @NotNull Material getMaterial() {
+        if (material == null) throw new IllegalStateException("Item " + key + " did not specify a material!");
+        return material;
+    }
+
+    /**
+     * Returns the material of this item.
+     * <p>This method should be overridden by items with a multiple, dynamically loaded materials.</p>
+     * For items with a single, statically set material see {@link FuzeItem#getMaterial()}.
+     *
+     * @return the material of this item
+     * @throws IllegalStateException when neither this method nor {@link FuzeItem#getMaterial()} has been overridden
+     */
+    protected @NotNull Material getMaterial(final @NotNull ConfigurationSection section) {
+        return getMaterial();
+    }
+
+    /**
+     * Returns the key of this item.
      *
      * @return the key
      */
@@ -94,16 +216,17 @@ public abstract class FuzeItem implements Keyable {
     }
 
     /**
-     * Returns the display {@link FuzeItem#name} of this item.
+     * Returns the display name of this item.
      *
      * @return the display name
      */
+    @Override
     public final @NotNull Component getName() {
         return name;
     }
 
     /**
-     * Returns the {@link FuzeItem#rarity} of this item.
+     * Returns the rarity of this item.
      *
      * @return the rarity
      */
@@ -112,9 +235,9 @@ public abstract class FuzeItem implements Keyable {
     }
 
     /**
-     * Returns the {@link FuzeItem#item} of this item.
+     * Returns the {@link ItemStack} of this item.
      *
-     * @return the item
+     * @return the item stack
      */
     public final @NotNull ItemStack getItem() {
         return new ItemStack(item);
@@ -124,25 +247,10 @@ public abstract class FuzeItem implements Keyable {
      * Turns this item into a nice readable string.
      * The {@link FuzeItem#name} will be used for this purpose.
      *
-     * @return the stripped {@link FuzeItem#name} of this item
+     * @return the stripped display name of this item
      */
     @Override
     public @NotNull String toString() {
-        return Message.strip(Message.serialize(name));
-    }
-
-    /**
-     * Returns an item registered with the provided key.
-     *
-     * @param key       the item key
-     * @param itemClass the item class
-     * @param <I>       the item
-     * @return an item registered with the key
-     * @throws IllegalArgumentException when the key is not a valid item key
-     */
-    public static <I extends FuzeItem> @NotNull I valueOf(final @NotNull String key, final @NotNull Class<I> itemClass) {
-        return ItemManager.INSTANCE.getItemByKey(key, itemClass).orElseThrow(
-                () -> new IllegalArgumentException("Unknown fuze item key: \"" + key + "\"!")
-        );
+        return Messages.strip(Messages.serialize(name));
     }
 }
