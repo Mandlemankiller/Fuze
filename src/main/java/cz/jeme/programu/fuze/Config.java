@@ -25,8 +25,8 @@ public final class Config {
      * @return true when Config was successfully initialized, otherwise false
      */
     public static synchronized boolean init(final @NotNull Fuze plugin) {
-        if (instance == null) {
-            instance = new Config(plugin);
+        if (Config.instance == null) {
+            Config.instance = new Config(plugin);
             return true;
         }
         return false;
@@ -40,9 +40,9 @@ public final class Config {
      * @throws IllegalStateException when Config was not initialized before calling this method
      */
     public static synchronized @NotNull Config instance() {
-        if (instance == null)
+        if (Config.instance == null)
             throw new IllegalStateException("Config was not yet initialized!");
-        return instance;
+        return Config.instance;
     }
 
 

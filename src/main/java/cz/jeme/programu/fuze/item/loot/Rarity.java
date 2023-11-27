@@ -12,10 +12,10 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Represents an item rarity.
+ * Represents a fuze item rarity.
  */
 public final class Rarity implements Keyable {
-    private static final @NotNull Map<String, Rarity> rarities = new HashMap<>();
+    private static final @NotNull Map<String, Rarity> RARITIES = new HashMap<>();
 
     /**
      * Registers all the rarities in the provided {@link ConfigurationSection}.
@@ -25,13 +25,13 @@ public final class Rarity implements Keyable {
      * @throws IllegalArgumentException when it encounters an invalid rarity {@link ConfigurationSection}
      */
     public static void registerRarities(final @NotNull ConfigurationSection section) {
-        rarities.clear();
+        Rarity.RARITIES.clear();
         for (String rarityName : section.getKeys(false)) {
             ConfigurationSection raritySection = section.getConfigurationSection(rarityName);
             if (raritySection == null)
                 throw new IllegalArgumentException("Invalid rarity in \"" + rarityName + "\"!");
 
-            rarities.put(rarityName, new Rarity(raritySection));
+            Rarity.RARITIES.put(rarityName, new Rarity(raritySection));
         }
     }
 
@@ -43,7 +43,7 @@ public final class Rarity implements Keyable {
      * @throws IllegalArgumentException when no rarity with the provided key exists
      */
     public static @NotNull Rarity valueOf(final @NotNull String key) {
-        return Optional.ofNullable(rarities.get(key))
+        return Optional.ofNullable(Rarity.RARITIES.get(key))
                 .orElseThrow(() -> new IllegalArgumentException("Unknown rarity key: \"" + key + "\"!"));
     }
 
@@ -54,7 +54,7 @@ public final class Rarity implements Keyable {
      * @return true when the rarity exists otherwise false
      */
     public static boolean exists(final @NotNull String key) {
-        return rarities.containsKey(key);
+        return Rarity.RARITIES.containsKey(key);
     }
 
     private final @NotNull String key;
@@ -63,7 +63,7 @@ public final class Rarity implements Keyable {
 
     private Rarity(final @NotNull ConfigurationSection section) {
         key = section.getName();
-        if (rarities.containsKey(key))
+        if (Rarity.RARITIES.containsKey(key))
             throw new IllegalArgumentException("\"name\" is not unique in rarity \"" + key + "\"!");
 
         name = Messages.deserialize(Objects.requireNonNull(
@@ -77,7 +77,7 @@ public final class Rarity implements Keyable {
         if (chance <= 0)
             throw new IllegalArgumentException("\"chance\" is not bigger than zero in rarity \"" + key + "\"!");
 
-        rarities.put(key, this);
+        Rarity.RARITIES.put(key, this);
     }
 
     @Override

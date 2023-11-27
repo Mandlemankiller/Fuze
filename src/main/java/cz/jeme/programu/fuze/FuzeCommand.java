@@ -31,8 +31,8 @@ public final class FuzeCommand extends Command {
      * @return true when Fuze command was successfully initialized, otherwise false
      */
     public static synchronized boolean init() {
-        if (instance == null) {
-            instance = new FuzeCommand();
+        if (FuzeCommand.instance == null) {
+            FuzeCommand.instance = new FuzeCommand();
             return true;
         }
         return false;
@@ -46,9 +46,9 @@ public final class FuzeCommand extends Command {
      * @throws IllegalStateException when Fuze command was not initialized before calling this method
      */
     public static synchronized @NotNull FuzeCommand instance() {
-        if (instance == null)
+        if (FuzeCommand.instance == null)
             throw new IllegalStateException("The FuzeCommand was not initialized yet!");
-        return instance;
+        return FuzeCommand.instance;
     }
 
     /**
@@ -79,7 +79,7 @@ public final class FuzeCommand extends Command {
      * will never be null. List may be immutable.
      */
     @Override
-    public @NotNull List<String> tabComplete(final @NotNull CommandSender sender, final @NotNull String alias, final @NotNull String[] args) {
+    public @NotNull List<String> tabComplete(final @NotNull CommandSender sender, final @NotNull String alias, final @NotNull String @NotNull [] args) {
         int length = args.length;
         if (length == 1)
             return Action.toStringList(
@@ -94,7 +94,7 @@ public final class FuzeCommand extends Command {
                     List<String> players = Bukkit.getOnlinePlayers().stream()
                             .map(Player::getName)
                             .collect(Collectors.toList());
-                    players.add(EVERYONE_SELECTOR);
+                    players.add(FuzeCommand.EVERYONE_SELECTOR);
                     yield players;
                 }
 
@@ -126,16 +126,16 @@ public final class FuzeCommand extends Command {
      * @return always true
      */
     @Override
-    public boolean execute(final @NotNull CommandSender sender, final @NotNull String commandLabel, final @NotNull String[] args) {
-        execute(new Execution(sender, commandLabel, args));
+    public boolean execute(final @NotNull CommandSender sender, final @NotNull String commandLabel, final @NotNull String @NotNull [] args) {
+        FuzeCommand.execute(new Execution(sender, commandLabel, args));
         return true;
     }
 
     private static void execute(final @NotNull Execution execution) {
         switch (Action.from(execution.args()[0])) {
-            case RELOAD -> reload(execution);
-            case GIVE -> give(execution);
-            case HELP -> usage(execution.sender());
+            case RELOAD -> FuzeCommand.reload(execution);
+            case GIVE -> FuzeCommand.give(execution);
+            case HELP -> FuzeCommand.usage(execution.sender());
             case UNKNOWN -> execution.sender()
                     .sendMessage(Messages.prefix("<red>Unknown action: " + execution.args[0]));
         }
@@ -157,20 +157,20 @@ public final class FuzeCommand extends Command {
 
         if (execution.args().length < 4) {
             sender.sendMessage(Messages.prefix("<red>Not enough arguments!"));
-            usage(sender);
+            FuzeCommand.usage(sender);
             return;
         }
 
         if (execution.args().length > 5) {
             sender.sendMessage(Messages.prefix("<red>Too many arguments!"));
-            usage(sender);
+            FuzeCommand.usage(sender);
             return;
         }
 
         List<Player> players = new ArrayList<>();
 
         String playerName = execution.args()[1];
-        if (playerName.equals(EVERYONE_SELECTOR)) {
+        if (playerName.equals(FuzeCommand.EVERYONE_SELECTOR)) {
             players.addAll(Bukkit.getOnlinePlayers());
         } else {
             Player player = Bukkit.getPlayerExact(playerName);
@@ -255,7 +255,7 @@ public final class FuzeCommand extends Command {
         }
 
         public static @NotNull Action from(final @NotNull String name) {
-            return Arrays.stream(values())
+            return Arrays.stream(Action.values())
                     .filter(action -> action.toString().equals(name))
                     .findFirst()
                     .orElse(Action.UNKNOWN);

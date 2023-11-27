@@ -45,7 +45,7 @@ public final class Messages {
      * @return the prefixed and deserialized {@link Component}
      */
     public static @NotNull Component prefix(final @NotNull String string) {
-        return deserialize(PREFIX + string);
+        return Messages.deserialize(Messages.PREFIX + string);
     }
 
     /**
@@ -77,7 +77,7 @@ public final class Messages {
      * @return the not-found message for the missing path
      */
     public static @NotNull String missing(final @NotNull String path, final @NotNull Keyable keyable) {
-        return missing(path, keyable.getType(), keyable.getKey());
+        return Messages.missing(path, keyable.getType(), keyable.getKey());
     }
 
     /**
@@ -97,6 +97,6 @@ public final class Messages {
      * @return the serialized and stripped component
      */
     public static @NotNull String strip(final @NotNull Component component) {
-        return strip(serialize(component));
+        return Messages.strip(Messages.serialize(component));
     }
 }

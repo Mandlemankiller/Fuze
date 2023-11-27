@@ -82,12 +82,12 @@ public final class ItemRegistry<T extends FuzeItem> {
             fuzeItem = constructor.newInstance(itemSection);
         } catch (InstantiationException | IllegalAccessException e) {
             throw new IllegalStateException(
-                    REGISTER_ERROR_MESSAGE.formatted(itemClass.getName()),
+                    ItemRegistry.REGISTER_ERROR_MESSAGE.formatted(itemClass.getName()),
                     e
             );
         } catch (InvocationTargetException e) {
             throw new IllegalStateException(
-                    REGISTER_ERROR_MESSAGE.formatted(itemClass.getName()),
+                    ItemRegistry.REGISTER_ERROR_MESSAGE.formatted(itemClass.getName()),
                     e.getCause()
             );
         }

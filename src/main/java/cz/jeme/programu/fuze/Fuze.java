@@ -32,6 +32,6 @@ public final class Fuze extends JavaPlugin {
      * @return the plugin object
      */
     public static @NotNull Fuze getPlugin() {
-        return getPlugin(Fuze.class);
+        return JavaPlugin.getPlugin(Fuze.class);
     }
 }
