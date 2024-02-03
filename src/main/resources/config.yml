@@ -10,6 +10,8 @@ registry:
       rarity: 'epic'
       shoot-cooldown: 200
       damage: 3
+      velocity: 40
+      ammo: '9mm'
 
   ammo:
     9mm:

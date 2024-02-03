@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Represents an ammo in the Fuze plugin.
  */
-public class Ammo extends FuzeItem {
+public final class Ammo extends FuzeItem {
     /**
      * Returns whether an Ammo registered with the provided key exists.
      *
@@ -63,7 +63,7 @@ public class Ammo extends FuzeItem {
      *
      * @param section the {@link ConfigurationSection} of the Ammo instance in config
      */
-    protected Ammo(final @NotNull ConfigurationSection section) {
+    private Ammo(final @NotNull ConfigurationSection section) {
         super(section);
     }
 
@@ -73,7 +73,7 @@ public class Ammo extends FuzeItem {
      * @return always {@link Material#IRON_NUGGET}
      */
     @Override
-    public final @NotNull Material getMaterial() {
+    public @NotNull Material getMaterial() {
         return Material.IRON_NUGGET;
     }
 
@@ -83,7 +83,7 @@ public class Ammo extends FuzeItem {
      * @return always "ammo"
      */
     @Override
-    public final @NotNull String getType() {
+    public @NotNull String getType() {
         return "ammo";
     }
 }
