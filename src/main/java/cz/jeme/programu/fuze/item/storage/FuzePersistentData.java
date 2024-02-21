@@ -16,27 +16,27 @@ import java.util.Optional;
 import java.util.Set;
 
 /**
- * A bare bones concrete fuze implementation of {@link ItemData}.
+ * A bare bones concrete fuze implementation of {@link PersistentData}.
  *
  * @param <T> the primary data type stored in the container
  * @param <Z> the retrieved (secondary) data type used when writing and reading
  */
-public final class FuzeItemData<T, Z> implements ItemData<T, Z> {
+public final class FuzePersistentData<T, Z> implements PersistentData<T, Z> {
     private static final @NotNull Set<String> KEYS = new HashSet<>();
     private final @NotNull NamespacedKey namespacedKey;
     private final @NotNull String key;
     private final @NotNull PersistentDataType<T, Z> type;
 
     /**
-     * Creates a new instance of {@link FuzeItemData}.
+     * Creates a new instance of {@link FuzePersistentData}.
      *
      * @param key  the unique key of this FuzeItemData; this will be later used to create a {@link NamespacedKey}
      * @param type the type of this FuzeItemData; for a start, you can use type enums from the {@link PersistentDataType} Class.
      */
-    public FuzeItemData(final @NotNull String key, final @NotNull PersistentDataType<T, Z> type) {
-        if (FuzeItemData.KEYS.contains(key))
+    public FuzePersistentData(final @NotNull String key, final @NotNull PersistentDataType<T, Z> type) {
+        if (FuzePersistentData.KEYS.contains(key))
             throw new IllegalArgumentException("A FuzeItemData with the provided key already exists!");
-        FuzeItemData.KEYS.add(key);
+        FuzePersistentData.KEYS.add(key);
         this.key = key;
         this.type = type;
         namespacedKey = new NamespacedKey(Fuze.getPlugin(), key);

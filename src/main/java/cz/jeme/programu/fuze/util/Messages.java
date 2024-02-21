@@ -61,7 +61,8 @@ public final class Messages {
      * @return the not-found message for the missing path
      */
     public static @NotNull String missing(final @NotNull String path, final @NotNull String type, final @NotNull String key) {
-        return "\"" + path + "\" not defined in " + type + " configuration: " + key;
+        return "\"%s\" not defined in %s configuration: %s"
+                .formatted(path, type, key);
     }
 
     /**

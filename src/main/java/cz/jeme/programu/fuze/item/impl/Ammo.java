@@ -1,7 +1,7 @@
 package cz.jeme.programu.fuze.item.impl;
 
 import cz.jeme.programu.fuze.item.FuzeItem;
-import cz.jeme.programu.fuze.item.registry.ItemManager;
+import cz.jeme.programu.fuze.item.ItemManager;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Represents an ammo in the Fuze plugin.
  */
-public final class Ammo extends FuzeItem {
+public class Ammo extends FuzeItem {
     /**
      * Returns whether an Ammo registered with the provided key exists.
      *
@@ -63,7 +63,7 @@ public final class Ammo extends FuzeItem {
      *
      * @param section the {@link ConfigurationSection} of the Ammo instance in config
      */
-    private Ammo(final @NotNull ConfigurationSection section) {
+    protected Ammo(final @NotNull ConfigurationSection section) {
         super(section);
     }
 
@@ -73,8 +73,13 @@ public final class Ammo extends FuzeItem {
      * @return always {@link Material#IRON_NUGGET}
      */
     @Override
-    public @NotNull Material getMaterial() {
+    public final @NotNull Material getMaterial() {
         return Material.IRON_NUGGET;
+    }
+
+    @Override
+    protected final @NotNull Material getMaterial(@NotNull ConfigurationSection section) {
+        return super.getMaterial(section);
     }
 
     /**

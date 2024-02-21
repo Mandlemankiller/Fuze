@@ -18,7 +18,7 @@ import java.util.Optional;
  * @param <K> the primary data type stored in the container
  * @param <V> the retrieved (secondary) data type used when writing and reading
  */
-public interface ItemData<K, V> extends PersistentDataType<K, V> {
+public interface PersistentData<K, V> extends PersistentDataType<K, V> {
     /**
      * Returns the {@link NamespacedKey} under which this ItemData is registered.
      *

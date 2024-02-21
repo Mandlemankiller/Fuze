@@ -1,10 +1,11 @@
 package cz.jeme.programu.fuze.item.impl;
 
+import cz.jeme.programu.fuze.util.Bullet;
 import cz.jeme.programu.fuze.item.FuzeItem;
+import cz.jeme.programu.fuze.item.ItemManager;
 import cz.jeme.programu.fuze.item.event.Subscribe;
-import cz.jeme.programu.fuze.item.registry.ItemManager;
-import cz.jeme.programu.fuze.item.storage.FuzeItemData;
-import cz.jeme.programu.fuze.item.storage.ItemData;
+import cz.jeme.programu.fuze.item.storage.FuzePersistentData;
+import cz.jeme.programu.fuze.item.storage.PersistentData;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.ConfigurationSection;
@@ -23,7 +24,7 @@ import java.util.Objects;
 /**
  * Represents a gun in the Fuze plugin.
  */
-public final class Gun extends FuzeItem {
+public class Gun extends FuzeItem {
 
     /**
      * Returns a Gun registered with the provided key.
@@ -69,19 +70,19 @@ public final class Gun extends FuzeItem {
     }
 
     /**
-     * Gun shoot cooldown item data storage.
+     * Gun shoot cooldown data storage.
      */
-    public static final @NotNull ItemData<Integer, Integer> SHOOT_COOLDOWN = new FuzeItemData<>("gun_shoot_cooldown", ItemData.INTEGER);
+    public static final @NotNull PersistentData<Integer, Integer> SHOOT_COOLDOWN = new FuzePersistentData<>("gun_shoot_cooldown", PersistentData.INTEGER);
 
     /**
-     * Gun damage item data storage.
+     * Gun damage data storage.
      */
-    public static final @NotNull ItemData<Double, Double> DAMAGE = new FuzeItemData<>("gun_damage", ItemData.DOUBLE);
+    public static final @NotNull PersistentData<Double, Double> DAMAGE = new FuzePersistentData<>("gun_damage", PersistentData.DOUBLE);
 
     /**
-     * Gun velocity item data storage.
+     * Gun velocity data storage.
      */
-    public static final @NotNull ItemData<Double, Double> VELOCITY = new FuzeItemData<>("gun_velocity", ItemData.DOUBLE);
+    public static final @NotNull PersistentData<Double, Double> VELOCITY = new FuzePersistentData<>("gun_velocity", PersistentData.DOUBLE);
 
     /**
      * The ammo of this Gun.
@@ -119,7 +120,7 @@ public final class Gun extends FuzeItem {
      *                                  and when no ammo with the ammo key exists
      * @throws NullPointerException     when name, rarity, ammo, shoot cooldown or damage is not set in config
      */
-    private Gun(final @NotNull ConfigurationSection section) {
+    protected Gun(final @NotNull ConfigurationSection section) {
         super(section);
 
         // Load gun data from config
@@ -134,7 +135,7 @@ public final class Gun extends FuzeItem {
         Gun.VELOCITY.write(item, velocity);
 
         CrossbowMeta crossbowMeta = ((CrossbowMeta) item.getItemMeta());
-        crossbowMeta.addChargedProjectile(Bullet.BULLET);
+        crossbowMeta.addChargedProjectile(Bullet.CROSSBOW_ARROW);
         item.setItemMeta(crossbowMeta);
     }
 
@@ -144,8 +145,13 @@ public final class Gun extends FuzeItem {
      * @return always {@link Material#CROSSBOW}
      */
     @Override
-    public @NotNull Material getMaterial() {
+    public final @NotNull Material getMaterial() {
         return Material.CROSSBOW;
+    }
+
+    @Override
+    protected final @NotNull Material getMaterial(@NotNull ConfigurationSection section) {
+        return super.getMaterial(section);
     }
 
     /**
@@ -163,7 +169,7 @@ public final class Gun extends FuzeItem {
      *
      * @return the Ammo
      */
-    public @NotNull Ammo getAmmo() {
+    public final @NotNull Ammo getAmmo() {
         return ammo;
     }
 
@@ -172,7 +178,7 @@ public final class Gun extends FuzeItem {
      *
      * @return the damage
      */
-    public double getDamage() {
+    public final double getDamage() {
         return damage;
     }
 
@@ -181,7 +187,7 @@ public final class Gun extends FuzeItem {
      *
      * @return the shoot cooldown in milliseconds
      */
-    public int getShootCooldown() {
+    public final int getShootCooldown() {
         return shootCooldown;
     }
 
@@ -210,7 +216,7 @@ public final class Gun extends FuzeItem {
     private static void shoot(final @NotNull PlayerInteractEvent event, final @NotNull Gun gun) {
         event.setCancelled(true);
         ItemStack item = Objects.requireNonNull(event.getItem());
-        Arrow bullet = event.getPlayer().launchProjectile(Arrow.class);
+        AbstractArrow bullet = event.getPlayer().launchProjectile(Arrow.class);
         bullet.setPickupStatus(AbstractArrow.PickupStatus.DISALLOWED);
         Bullet.GUN_KEY.write(bullet, gun.getKey());
         Bullet.GUN_DAMAGE.write(bullet, Gun.DAMAGE.read(item)
@@ -229,16 +235,13 @@ public final class Gun extends FuzeItem {
     private static void onProjectileHit(final @NotNull ProjectileHitEvent event) {
         Projectile projectile = event.getEntity();
         if (!Bullet.GUN_KEY.contains(projectile)) return;
+
     }
 
     @Subscribe
     private static void onEntityDamageByEntity(final @NotNull EntityDamageByEntityEvent event) {
-        LivingEntity target = ((LivingEntity) event.getEntity());
-        if (!(event.getDamager() instanceof Projectile projectile)) {
-            target.setMaximumNoDamageTicks(20);
-            return;
-        }
-        if (!Bullet.GUN_KEY.contains(projectile)) {
+        if (!(event.getEntity() instanceof LivingEntity target)) return;
+        if (!(event.getDamager() instanceof Projectile projectile) || !Bullet.GUN_KEY.contains(projectile)) {
             target.setMaximumNoDamageTicks(20);
             return;
         }
@@ -253,7 +256,10 @@ public final class Gun extends FuzeItem {
         switch (event.getCause()) {
             case ENTITY_ATTACK, ENTITY_SWEEP_ATTACK, PROJECTILE, ENTITY_EXPLOSION, THORNS, DRAGON_BREATH, SONIC_BOOM -> {
             }
-            default -> ((LivingEntity) event.getEntity()).setMaximumNoDamageTicks(20);
+            default -> {
+                if (event.getEntity() instanceof LivingEntity livingEntity)
+                    livingEntity.setMaximumNoDamageTicks(20);
+            }
         }
     }
 }

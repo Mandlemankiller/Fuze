@@ -2,7 +2,7 @@ package cz.jeme.programu.fuze;
 
 import cz.jeme.programu.fuze.item.impl.Ammo;
 import cz.jeme.programu.fuze.item.impl.Gun;
-import cz.jeme.programu.fuze.item.registry.ItemManager;
+import cz.jeme.programu.fuze.item.ItemManager;
 import cz.jeme.programu.fuze.item.loot.Rarity;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;

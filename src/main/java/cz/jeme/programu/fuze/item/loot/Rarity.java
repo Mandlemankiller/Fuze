@@ -80,6 +80,11 @@ public final class Rarity implements Keyable {
         Rarity.RARITIES.put(key, this);
     }
 
+    /**
+     * Returns the Rarity type.
+     *
+     * @return always "rarity"
+     */
     @Override
     public @NotNull String getType() {
         return "rarity";
@@ -97,7 +102,6 @@ public final class Rarity implements Keyable {
 
     /**
      * Returns the chance of this rarity.
-     * TODO
      *
      * @return the chance of this rarity
      */

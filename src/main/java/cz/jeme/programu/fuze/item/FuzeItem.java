@@ -4,9 +4,8 @@ import cz.jeme.programu.fuze.item.event.EventManager;
 import cz.jeme.programu.fuze.item.impl.Ammo;
 import cz.jeme.programu.fuze.item.impl.Gun;
 import cz.jeme.programu.fuze.item.loot.Rarity;
-import cz.jeme.programu.fuze.item.registry.ItemManager;
-import cz.jeme.programu.fuze.item.storage.FuzeItemData;
-import cz.jeme.programu.fuze.item.storage.ItemData;
+import cz.jeme.programu.fuze.item.storage.FuzePersistentData;
+import cz.jeme.programu.fuze.item.storage.PersistentData;
 import cz.jeme.programu.fuze.util.Messages;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -32,26 +31,57 @@ public abstract class FuzeItem implements Keyable {
     /**
      * Returns a fuze item registered with the provided String key.
      *
-     * @param key       the fuze item key
-     * @param itemClass the fuze item Class
-     * @param <T>       the fuze item
+     * @param key the fuze item key
      * @return a fuze item registered with the item key
-     * @throws IllegalArgumentException when no fuze item of the itemClass with the provided key exists
+     * @throws IllegalArgumentException when no fuze item with the provided key exists
      */
+    public static @NotNull FuzeItem valueOf(final @NotNull String key) {
+        return ItemManager.INSTANCE.getItemByKey(key)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown item key: \"%s\"!".formatted(key)));
+    }
+
+    /**
+     * Returns a fuze item registered with the provided String key.
+     *
+     * @param key       the fuze item key
+     * @param itemClass the fuze item class
+     * @param <T>       the fuze item
+     * @return a fuze item registered with the item key that is instance of the provided class
+     * @throws IllegalArgumentException when no fuze item with the provided key exists or
+     *                                  when the fuze item is not instance of the provided class
+     */
+    @SuppressWarnings("unchecked")
     public static <T extends FuzeItem> @NotNull T valueOf(final @NotNull String key, final @NotNull Class<T> itemClass) {
-        return ItemManager.INSTANCE.getItemByKey(key, itemClass)
-                .orElseThrow(() -> new IllegalArgumentException("Unknown item key: \"" + key + "\"!"));
+        FuzeItem fuzeItem = FuzeItem.valueOf(key);
+        if (!itemClass.isInstance(fuzeItem))
+            throw new IllegalArgumentException("Item registered with key \"%s\" is not instance of \"%s\"!"
+                    .formatted(key, itemClass.getName()));
+        return (T) fuzeItem;
+    }
+
+    /**
+     * Returns a fuze item parsed from an {@link ItemStack}.
+     *
+     * @param item the ItemStack to read the key from
+     * @return a fuze item parsed from the ItemStack
+     * @throws IllegalArgumentException when the key data stored inside the ItemStack is not valid
+     */
+    public static @NotNull FuzeItem valueOf(final @NotNull ItemStack item) {
+        Optional<String> key = FuzeItem.KEY.read(item);
+        if (key.isEmpty())
+            throw new IllegalArgumentException("The provided item is not a fuze item!");
+        return FuzeItem.valueOf(key.get());
     }
 
     /**
      * Returns a fuze item parsed from an {@link ItemStack}.
      *
      * @param item      the ItemStack to read the key from
-     * @param itemClass the fuze item Class
+     * @param itemClass the fuze item class
      * @param <T>       the fuze item
-     * @return a fuze item parsed from the ItemStack
-     * @throws IllegalArgumentException when the provided ItemStack is not instance of the provided item Class or
-     *                                  when the key data stored inside the ItemStack is not valid
+     * @return a fuze item parsed from the ItemStack that is instance of the provided class
+     * @throws IllegalArgumentException when the key data stored inside the ItemStack is not valid or
+     *                                  when the item is not instance of the provided class
      */
     public static <T extends FuzeItem> @NotNull T valueOf(final @NotNull ItemStack item, final @NotNull Class<T> itemClass) {
         Optional<String> key = FuzeItem.KEY.read(item);
@@ -63,31 +93,55 @@ public abstract class FuzeItem implements Keyable {
     /**
      * Returns whether a fuze item registered with the provided key exists.
      *
-     * @param key       the fuze item key
-     * @param itemClass the fuze item class
+     * @param key the fuze item key
      * @return true when the fuze item exists otherwise false
      */
+    public static boolean exists(final @Nullable String key) {
+        return key != null && ItemManager.INSTANCE.existsItemByKey(key);
+    }
+
+    /**
+     * Returns whether a fuze item registered with the provided key exists.
+     *
+     * @param key       the fuze item key
+     * @param itemClass the fuze item class
+     * @return true when the fuze item exists and is instance of the provided class otherwise false
+     */
     public static boolean exists(final @Nullable String key, final @NotNull Class<? extends FuzeItem> itemClass) {
-        return key != null && ItemManager.INSTANCE.existsItemByKey(key, itemClass);
+        if (key == null) return false;
+        Optional<FuzeItem> fuzeItem = ItemManager.INSTANCE.getItemByKey(key);
+        return fuzeItem.filter(itemClass::isInstance).isPresent();
+    }
+
+    /**
+     * Returns whether an {@link ItemStack} is a fuze item.
+     *
+     * @param item the ItemStack to check the key data on
+     * @return true when the ItemStack is a fuze item otherwise false
+     */
+    public static boolean exists(final @Nullable ItemStack item) {
+        if (item == null) return false;
+        Optional<String> key = FuzeItem.KEY.read(item);
+        return key.filter(FuzeItem::exists).isPresent();
     }
 
     /**
      * Returns whether an {@link ItemStack} is a fuze item.
      *
      * @param item      the ItemStack to check the key data on
-     * @param itemClass the fuze item Class
-     * @return true when the ItemStack is a fuze item otherwise false
+     * @param itemClass the fuze item class
+     * @return true when the ItemStack is a fuze item and is instance of the provided class otherwise false
      */
     public static boolean exists(final @Nullable ItemStack item, final @NotNull Class<? extends FuzeItem> itemClass) {
         if (item == null) return false;
         Optional<String> key = FuzeItem.KEY.read(item);
-        return key.filter(s -> FuzeItem.exists(s, itemClass)).isPresent();
+        return key.filter(value -> FuzeItem.exists(value, itemClass)).isPresent();
     }
 
     /**
-     * Key item data storage.
+     * Key data storage.
      */
-    public static final @NotNull ItemData<String, String> KEY = new FuzeItemData<>("item_key", ItemData.STRING);
+    public static final @NotNull PersistentData<String, String> KEY = new FuzePersistentData<>("item_key", PersistentData.STRING);
 
     /**
      * The {@link ConfigurationSection} of the item instance in config.
@@ -142,7 +196,7 @@ public abstract class FuzeItem implements Keyable {
         final String tempKey = section.getName();
         if (!tempKey.matches("^[a-z0-9_.-]+$"))
             throw new IllegalArgumentException(
-                    "Invalid item key: %s! Keys can only contain [a-z0-9_.-]!"
+                    "Invalid item key: \"%s\"! Keys can only contain [a-z0-9_.-]!"
                             .formatted(tempKey)
             );
         key = tempKey;
@@ -232,7 +286,7 @@ public abstract class FuzeItem implements Keyable {
 
     /**
      * Returns the material of this item.
-     * <p>This method should be overridden by items with a multiple, dynamically loaded materials.</p>
+     * <p>This method should be overridden by items with multiple, dynamically loaded materials.</p>
      * For items with a single, statically set material see {@link FuzeItem#getMaterial()}.
      *
      * @return the material of this item
